@@ -2,48 +2,55 @@
 
 import { type FC, useState, useEffect } from "react"
 import { motion } from "framer-motion"
-import { Store, ArrowRight, TrendingUp } from 'lucide-react'
+import { ShoppingBag, ArrowRight } from 'lucide-react' 
 import Link from "next/link"
 
 const Banner: FC = () => {
   // Mobile carousel state
   const [currentSlide, setCurrentSlide] = useState(0);
-  
-  // Mobile banner slides
+
+  // --- REVISED STYLE CONSTANTS (Fashion Accent - Red/Pink - matching the image) ---
+  const PRIMARY_COLOR = "bg-red-600"; // Primary accent color (Reddish-Pink for discount)
+  const TEXT_COLOR = "text-gray-900"; // Dark text
+  const ACCENT_COLOR = "text-red-600"; // Red accent for titles/prices
+  const BUTTON_HOVER = "hover:bg-red-700"; // Red hover
+  const BACKGROUND_COLOR = "bg-white"; // Clean white background
+
+  // Mobile banner slides (Updated for Fashion/Accessories theme)
   const mobileSlides = [
     {
       id: 1,
-      title: "SMART TECH TRENDS",
-      subtitle: "ALL IN ONE PAGE",
-      discount: "UP TO 70% OFF",
-      buttonText: "SHOP NOW",
-      bgColor: "bg-gradient-to-r from-blue-600 via-purple-600 to-blue-800",
-      image: "/placeholder-tech.png"
+      title: "SUMMER FASHION",
+      subtitle: "LATEST TRENDS",
+      discount: "50% OFF",
+      buttonText: "SHOP WOMEN",
+      bgColor: "bg-white border-b border-gray-100",
+      image: "/placeholder-fashion-1.png" 
     },
     {
       id: 2,
-      title: "ELECTRONIC DEALS",
-      subtitle: "BEST PRICES GUARANTEED",
-      discount: "UP TO 60% OFF",
-      buttonText: "EXPLORE",
-      bgColor: "bg-gradient-to-r from-indigo-600 via-blue-600 to-purple-700",
-      image: "/placeholder-electronics.png"
+      title: "ACCESSORIES SALE",
+      subtitle: "SUNGLASSES & BAGS",
+      discount: "EXTRA 20% OFF",
+      buttonText: "EXPLORE ACCESSORIES",
+      bgColor: "bg-white border-b border-gray-100",
+      image: "/placeholder-accessories-2.png" 
     },
     {
       id: 3,
-      title: "GADGET PARADISE",
-      subtitle: "LATEST TECHNOLOGY",
-      discount: "UP TO 50% OFF",
-      buttonText: "DISCOVER",
-      bgColor: "bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-700",
-      image: "/placeholder-gadgets.png"
+      title: "MENSWEAR NEW ARRIVAL",
+      subtitle: "FORMAL & CASUAL",
+      discount: "UP TO 40% OFF",
+      buttonText: "SHOP MEN",
+      bgColor: "bg-white border-b border-gray-100",
+      image: "/placeholder-menswear-3.png" 
     }
   ];
 
   // Auto-slide functionality for mobile
   useEffect(() => {
     const interval = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % mobileSlides.length);
+      setCurrentSlide((prev: number) => (prev + 1) % mobileSlides.length);
     }, 4000);
 
     return () => clearInterval(interval);
@@ -71,8 +78,10 @@ const Banner: FC = () => {
   }
 
   return (
-    <section className="relative overflow-hidden bg-gradient-to-r from-yellow-400 to-yellow-500 w-full">
-      {/* Mobile Banner */}
+    // Base container: white background, clean border
+    <section className={`relative overflow-hidden ${BACKGROUND_COLOR} w-full border-b border-gray-200`}>
+      
+      {/* Mobile Banner (Red/Pink Accent) */}
       <div className="lg:hidden">
         <div className="relative h-[180px] overflow-hidden">
           {/* Mobile Slides */}
@@ -80,7 +89,7 @@ const Banner: FC = () => {
             {mobileSlides.map((slide, index) => (
               <motion.div
                 key={slide.id}
-                className={`absolute inset-0 ${slide.bgColor} flex items-center px-4`}
+                className={`absolute inset-0 ${slide.bgColor} flex items-center px-4 ${TEXT_COLOR}`}
                 initial={{ opacity: 0, x: 100 }}
                 animate={{
                   opacity: currentSlide === index ? 1 : 0,
@@ -92,55 +101,39 @@ const Banner: FC = () => {
                 <div className="flex items-center justify-between w-full">
                   {/* Left Content */}
                   <div className="flex-1 space-y-2">
-                    <div className="bg-red-500 text-white text-xs font-bold px-3 py-1 rounded-full inline-block">
+                    {/* Discount badge - Solid Red/Pink, rounded-md */}
+                    <div className={`${PRIMARY_COLOR} text-white text-xs font-bold px-3 py-1 rounded-md inline-block uppercase tracking-wider`}>
                       {slide.discount}
                     </div>
-                    <h2 className="text-white font-bold text-lg leading-tight">
+                    <h2 className={`font-bold text-lg leading-tight ${TEXT_COLOR}`}>
                       {slide.title}
                     </h2>
-                    <p className="text-white/90 text-sm mb-3">
+                    <p className="text-gray-600 text-sm mb-3">
                       {slide.subtitle}
                     </p>
-                    <button className="bg-white text-gray-800 px-4 py-2 rounded-lg text-sm font-bold hover:bg-gray-100 transition-colors">
+                    {/* Button with Red/Pink primary color, rounded-md */}
+                    <button className={`${PRIMARY_COLOR} text-white px-4 py-2 rounded-md text-sm font-bold transition-colors ${BUTTON_HOVER} shadow-sm`}>
                       {slide.buttonText}
                     </button>
                   </div>
                   
-                  {/* Right Content - Tech devices illustration */}
+                  {/* Right Content - Generic fashion/bag placeholder */}
                   <div className="flex-shrink-0 ml-4 relative">
-                    <div className="relative">
-                      {/* Main tech device container */}
-                      <div className="w-28 h-20 relative">
-                        {/* Smartphone */}
-                        <div className="absolute top-0 right-0 w-8 h-12 bg-white/20 rounded-lg border border-white/30 flex items-center justify-center">
-                          <div className="w-6 h-8 bg-white/40 rounded"></div>
-                        </div>
-                        
-                        {/* Laptop */}
-                        <div className="absolute bottom-0 left-0 w-16 h-10 bg-white/20 rounded border border-white/30">
-                          <div className="w-full h-2 bg-white/30 rounded-t"></div>
-                        </div>
-                        
-                        {/* Smart watch */}
-                        <div className="absolute top-2 left-2 w-6 h-6 bg-white/25 rounded-full border border-white/40 flex items-center justify-center">
-                          <div className="w-4 h-4 bg-white/40 rounded-sm"></div>
-                        </div>
-                      </div>
-                    </div>
+                    <ShoppingBag className={`w-16 h-16 ${ACCENT_COLOR} opacity-50`} />
                   </div>
                 </div>
               </motion.div>
             ))}
           </div>
 
-          {/* Dots Indicator */}
+          {/* Dots Indicator - Use primary color on light background */}
           <div className="absolute bottom-3 left-1/2 transform -translate-x-1/2 flex space-x-1">
             {mobileSlides.map((_, index) => (
               <button
                 key={index}
                 onClick={() => goToSlide(index)}
-                className={`w-6 h-1 rounded-full transition-colors ${
-                  currentSlide === index ? 'bg-white' : 'bg-white/50'
+                className={`w-2 h-2 rounded-full transition-all ${
+                  currentSlide === index ? `${PRIMARY_COLOR} w-6` : 'bg-gray-400'
                 }`}
               />
             ))}
@@ -148,145 +141,122 @@ const Banner: FC = () => {
         </div>
       </div>
 
-      {/* Desktop Banner - Keep Original */}
+      {/* Desktop Banner - REVISED for Fashion Banner Layout (Solid Color Backgrounds) */}
       <div className="hidden lg:block">
-        {/* Hero carousel container */}
-        <div className="relative h-[300px] md:h-[400px] lg:h-[500px] overflow-hidden">
-          {/* Background pattern */}
-          <div className="absolute inset-0 opacity-10">
-            <div className="absolute inset-0" style={{
-              backgroundImage: `radial-gradient(circle at 1px 1px, rgba(255,255,255,0.3) 1px, transparent 0)`,
-              backgroundSize: '20px 20px'
-            }}></div>
-          </div>
-
-          {/* Main hero content */}
-          <div className="relative z-10 flex items-center h-full">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-              <div className="grid lg:grid-cols-2 gap-8 items-center">
-                {/* Left side - Text content */}
-                <motion.div 
-                  variants={containerVariants}
-                  initial="hidden"
-                  animate="visible"
-                  className="text-center lg:text-left space-y-6"
-                >
-                  {/* Discount badge */}
-                  <motion.div 
-                    variants={itemVariants}
-                    className="inline-flex items-center gap-2 bg-red-500 text-white font-bold px-6 py-2 rounded-full text-lg shadow-lg"
-                  >
-                    <span>UP TO 70% OFF</span>
-                  </motion.div>
-                  
-                  {/* Main heading */}
-                  <motion.div variants={itemVariants}>
-                    <h1 className="text-2xl md:text-4xl lg:text-5xl font-bold mb-4 text-white leading-tight">
-                      Mega Sale Event
-                      <span className="block text-yellow-200">
-                        Best Deals Here!
-                      </span>
-                    </h1>
-                  </motion.div>
-                  
-                  {/* CTA Buttons */}
-                  <motion.div variants={itemVariants} className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-                    <Link href="/shop">
-                      <motion.button
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        className="bg-white text-yellow-600 px-8 py-4 rounded-lg text-lg font-bold shadow-lg hover:shadow-xl transition-all flex items-center gap-2 justify-center"
-                      >
-                        <Store className="w-6 h-6" />
-                        Shop Now
-                        <ArrowRight className="w-5 h-5" />
-                      </motion.button>
-                    </Link>
-                    
-                    <Link href="/seller">
-                      <motion.button
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        className="border-2 border-white text-white px-8 py-4 rounded-lg text-lg font-bold backdrop-blur-sm bg-white/10 hover:bg-white/20 flex items-center gap-2 justify-center transition-all"
-                      >
-                        <TrendingUp className="w-6 h-6" />
-                        Start Selling
-                      </motion.button>
-                    </Link>
-                  </motion.div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full py-8">
+          <div className="grid lg:grid-cols-[2fr_1fr] gap-4">
+            
+            {/* 1. Main Fashion Hero Banner (Left 2/3) - Now uses solid color background */}
+            <div className="relative h-[450px] overflow-hidden rounded-lg shadow-sm">
+              {/* Background Color: Light Beige/Peach for the main hero */}
+              <div 
+                className="absolute inset-0 bg-cover bg-center"
+                // Using a light color instead of an image
+                style={{ backgroundColor: '#f8f0e5' }} 
+              >
+              </div>
+              
+              {/* Content Overlay */}
+              <motion.div 
+                variants={containerVariants}
+                initial="hidden"
+                animate="visible"
+                className="relative z-10 p-8 flex flex-col justify-start h-full text-left"
+              >
+                {/* Main 50% OFF Badge - High contrast style */}
+                <motion.div variants={itemVariants} className="mb-8">
+                  <h1 className="text-8xl font-extrabold tracking-tighter drop-shadow-lg">
+                    {/* LIMITED STOCK text is now RED on white background */}
+                    <span className="bg-white text-red-600 px-3 py-1 text-4xl inline-block mr-2 rounded-sm font-bold">LIMITED STOCK</span>
+                    {/* 50% OFF text is white on red background */}
+                    <span className={`${PRIMARY_COLOR} text-white px-4 py-2 rounded-sm text-5xl inline-block font-bold mt-2 shadow-2xl`}>50% OFF</span>
+                  </h1>
                 </motion.div>
                 
-                {/* Right side - Product showcase */}
-                <motion.div 
-                  initial={{ opacity: 0, x: 50 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.6, delay: 0.2 }}
-                  className="relative flex items-center justify-center"
-                >
-                  {/* Product showcase cards */}
-                  <div className="relative">
-                    {/* Main product card */}
-                    <motion.div
-                      className="bg-white/95 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-white/40 max-w-sm"
-                      animate={{ y: [0, -8, 0] }}
-                      transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-                    >
-                      <div className="text-center space-y-4">
-                        <div className="bg-gradient-to-r from-yellow-400 to-yellow-500 w-20 h-20 rounded-full flex items-center justify-center mx-auto">
-                          <Store className="w-10 h-10 text-white" />
-                        </div>
-                        <h3 className="text-xl font-bold text-gray-800">Featured Products</h3>
-                        <div className="text-2xl font-bold text-yellow-600">Best Prices</div>
-                        <p className="text-gray-600">Amazing deals await you</p>
-                      </div>
-                    </motion.div>
-                    
-                    {/* Floating discount badges */}
-                    <motion.div
-                      className="absolute -top-4 -left-4 bg-red-500 text-white rounded-xl p-3 shadow-lg"
-                      animate={{ y: [0, -5, 0], rotate: [0, 2, 0] }}
-                      transition={{ duration: 4, repeat: Infinity, delay: 0.5 }}
-                    >
-                      <div className="text-center">
-                        <div className="text-lg font-bold">50%</div>
-                        <div className="text-xs">OFF</div>
-                      </div>
-                    </motion.div>
-                    
-                    <motion.div
-                      className="absolute -bottom-4 -right-4 bg-green-500 text-white rounded-xl p-3 shadow-lg"
-                      animate={{ y: [0, 6, 0], rotate: [0, -2, 0] }}
-                      transition={{ duration: 4.5, repeat: Infinity, delay: 1 }}
-                    >
-                      <div className="text-center">
-                        <div className="text-lg font-bold">FREE</div>
-                        <div className="text-xs">SHIP</div>
-                      </div>
-                    </motion.div>
-                  </div>
+                {/* Text and Button (near the bottom left) */}
+                <motion.div variants={itemVariants}>
+                    {/* Text changed to dark text for light background */}
+                    <p className="text-gray-800 text-lg font-semibold bg-white bg-opacity-70 p-2 inline-block rounded-md">
+                        Explore new arrivals in women's fashion.
+                    </p>
                 </motion.div>
+                <div className="mt-auto pt-4">
+                    <Link href="/women">
+                        <motion.button
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            // Button is white background with dark text
+                            className={`bg-white ${TEXT_COLOR} px-8 py-3 rounded-md text-lg font-bold shadow-xl transition-all flex items-center gap-2 justify-center hover:bg-gray-100`}
+                        >
+                            <ShoppingBag className="w-5 h-5" />
+                            Shop Now
+                        </motion.button>
+                    </Link>
+                </div>
+              </motion.div>
+            </div>
+            
+            {/* 2. Secondary Accessories Banner (Right 1/3) - Light theme with Red accent */}
+            <div className="grid grid-rows-2 gap-4">
+              
+              {/* Top Right: Exclusive Offer Banner - Now uses solid color background */}
+              <div className="relative h-[220px] overflow-hidden rounded-lg shadow-sm">
+                {/* Background Color: Light Lavender/Pink for the secondary banner */}
+                <div 
+                  className="absolute inset-0 bg-cover bg-right"
+                  // Using a light color instead of an image
+                  style={{ backgroundColor: '#f0e5f8' }} 
+                >
+                </div>
+                
+                {/* Content Overlay */}
+                <div className="relative z-10 p-4 flex flex-col h-full justify-start items-start text-left">
+                    {/* Accent badge is red */}
+                    <span className={`text-xs font-bold uppercase tracking-widest ${PRIMARY_COLOR} text-white px-2 py-1 rounded-sm`}>EXCLUSIVE OFFER</span>
+                    {/* Heading text is dark */}
+                    <h3 className={`text-2xl font-bold mt-2 drop-shadow-md ${TEXT_COLOR}`}>
+                        BROWSE
+                        <span className={`block ${ACCENT_COLOR}`}>ACCESSORIES</span>
+                    </h3>
+                    
+                    <Link href="/accessories" className="mt-auto">
+                        <button className={`bg-gray-900 text-white px-4 py-2 rounded-md text-sm font-bold transition-colors hover:bg-gray-800 flex items-center gap-1`}>
+                            Explore Now <ArrowRight className="w-4 h-4" />
+                        </button>
+                    </Link>
+                </div>
+              </div>
+              
+              {/* Bottom Right: Single Item Promo (Sunglasses) - Light theme with Red accent */}
+              <div className="relative h-[220px] overflow-hidden rounded-lg bg-gray-100 shadow-sm flex items-center justify-center p-4">
+                <div className="flex items-center space-x-4 w-full">
+                    {/* Icon for Sunglasses - Replaced dummy div with a red shopping bag icon */}
+                    <div className="w-1/2 h-full flex items-center justify-center">
+                        <ShoppingBag className={`w-16 h-16 ${ACCENT_COLOR} opacity-70`} />
+                    </div>
+                    {/* Text content for sunglasses */}
+                    <div className="w-1/2 space-y-1">
+                        <p className={`text-sm font-semibold ${TEXT_COLOR}`}>Classic Shades</p>
+                        <p className="text-xs text-gray-500">Starting at</p>
+                        {/* Price accent is red */}
+                        <p className={`text-xl font-bold ${ACCENT_COLOR}`}>$49.99</p>
+                        <Link href="/sunglasses">
+                            <button className={`text-xs font-semibold ${ACCENT_COLOR} hover:underline flex items-center mt-2`}>
+                                View Item <ArrowRight className="w-3 h-3 ml-1" />
+                            </button>
+                        </Link>
+                    </div>
+                </div>
               </div>
             </div>
+            
           </div>
         </div>
       </div>
       
-      {/* Bottom wave decoration */}
-      <div className="absolute bottom-0 left-0 w-full">
-        <svg viewBox="0 0 1440 60" className="w-full h-8 md:h-12">
-          <defs>
-            <linearGradient id="waveGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#ffffff" stopOpacity="0.1"/>
-              <stop offset="50%" stopColor="#ffffff" stopOpacity="0.2"/>
-              <stop offset="100%" stopColor="#ffffff" stopOpacity="0.1"/>
-            </linearGradient>
-          </defs>
-          <path
-            d="M0,30 C240,45 480,15 720,30 C960,45 1200,15 1440,30 L1440,60 L0,60 Z"
-            fill="url(#waveGradient)"
-          />
-        </svg>
-      </div>
+      {/* Clean separation border */}
+      <div className="border-t border-gray-200 w-full"></div>
+
     </section>
   )
 }
