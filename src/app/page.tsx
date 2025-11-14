@@ -6,6 +6,7 @@ import ShopByCategory from "./home/ShopByCategory";
 import ProductListings from "./home/ProductListings";
 import MobilePromotions from "./home/MobilePromotions";
 import DesktopSearchBar from "./home/DesktopSearchBar";
+import CenetrEmailSection from "./home/CenetrEmailSection";
 
 export default function Home() {
   return (
@@ -28,6 +29,12 @@ export default function Home() {
       
       
       
+      {/* Product Listings - Visible on all devices */}
+      <ProductListings />
+
+
+      <CenetrEmailSection />
+
       {/* Product Listings - Visible on all devices */}
       <ProductListings />
     </main>
