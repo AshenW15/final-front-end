@@ -122,7 +122,6 @@ const EnhancedCart = () => {
   // Alert and confirmation modals
   const { error: showError, AlertModalComponent, ConfirmationModalComponent } = useAlerts();
 
-
   const fetchProductsFromBackend = async (): Promise<void> => {
     try {
       const res = await fetch(`${baseUrl}/fetch_all_products.php`, {
@@ -135,7 +134,7 @@ const EnhancedCart = () => {
 
       const responseText = await res.text();
       let data;
-      
+
       try {
         data = JSON.parse(responseText);
       } catch (parseError) {
@@ -164,10 +163,10 @@ const EnhancedCart = () => {
   }, []);
 
   useEffect(() => {
-    withLoading(async () => {
-      await fetchProducts();
-    });
-  }, [withLoading]);
+    if (user?.email) {
+      withLoading(() => fetchProducts());
+    }
+  }, [user?.email]);
 
   useEffect(() => {
     console.log('Cart Data Updated:', cartData);
@@ -189,63 +188,59 @@ const EnhancedCart = () => {
   //   console.log(`Item ${id} selection toggled:`, newCartItems);
   // };
 
-
   // Keep fetchProducts OUTSIDE of handleRemoveItem
-// const fetchProducts = async (): Promise<void> => {
-//   const userEmail = user?.email || '';
-//   console.log('Session Email:', userEmail);
+  // const fetchProducts = async (): Promise<void> => {
+  //   const userEmail = user?.email || '';
+  //   console.log('Session Email:', userEmail);
 
-//   const formData = new FormData();
-//   formData.append('user_email', userEmail);
+  //   const formData = new FormData();
+  //   formData.append('user_email', userEmail);
 
-//   try {
-//     const res = await fetch(`${baseUrl}/fetch_cart_items.php`, {
-//       method: 'POST',
-//       body: formData,
-//     });
-//     const data = await res.json();
-//     console.log('Cart data received:', data);
+  //   try {
+  //     const res = await fetch(`${baseUrl}/fetch_cart_items.php`, {
+  //       method: 'POST',
+  //       body: formData,
+  //     });
+  //     const data = await res.json();
+  //     console.log('Cart data received:', data);
 
-//     if (data.cart) {
-//       const cartItems: CartItems[] = data.cart;
-//       setCartData(cartItems);
+  //     if (data.cart) {
+  //       const cartItems: CartItems[] = data.cart;
+  //       setCartData(cartItems);
 
-//       const uniqueCategories = [
-//         ...new Set(cartItems.map((item) => item.product_category)),
-//       ] as string[];
-//       const productIds = cartItems.map((item) => item.product_id.toString());
+  //       const uniqueCategories = [
+  //         ...new Set(cartItems.map((item) => item.product_category)),
+  //       ] as string[];
+  //       const productIds = cartItems.map((item) => item.product_id.toString());
 
-//       console.log('Unique categories from cart:', uniqueCategories);
-//       console.log('Product IDs from cart:', productIds);
+  //       console.log('Unique categories from cart:', uniqueCategories);
+  //       console.log('Product IDs from cart:', productIds);
 
-//       if (uniqueCategories.length > 0) {
-//         await fetchMatchingItems(uniqueCategories, productIds);
-//       }
-//     }else{
-//       setCartData([]);
-//     }
-//   } catch (err) {
-//     console.error('Error fetching cart items:', err);
-//     setCartData([]);
-//   }
-// };
+  //       if (uniqueCategories.length > 0) {
+  //         await fetchMatchingItems(uniqueCategories, productIds);
+  //       }
+  //     }else{
+  //       setCartData([]);
+  //     }
+  //   } catch (err) {
+  //     console.error('Error fetching cart items:', err);
+  //     setCartData([]);
+  //   }
+  // };
 
-const fetchProducts = async (): Promise<void> => {
+ const fetchProducts = async (): Promise<void> => {
   setCartLoading(true);
-  let userEmail = user?.email || "";
+  let userEmail = user?.email || '';
 
-  
   if (!userEmail) {
-    if (typeof window === "undefined") {
-      // --- Server side (Next.js SSR) ---
+    if (typeof window === 'undefined') {
       try {
-        const { cookies } = await import("next/headers");
-        userEmail = (await cookies()).get("userEmail")?.value || "";
+        const { cookies } = await import('next/headers');
+        userEmail = (await cookies()).get('userEmail')?.value || '';
       } catch {
-        userEmail = "";
+        userEmail = '';
       }
     } else {
-      // --- Client side ---
       const match = document.cookie.match(/(?:^|;\s*)userEmail=([^;]+)/);
       if (match) {
         userEmail = decodeURIComponent(match[1]);
@@ -253,55 +248,43 @@ const fetchProducts = async (): Promise<void> => {
     }
   }
 
-  console.log("Session Email:", userEmail);
-
-  const formData = new FormData();
-  formData.append("user_email", userEmail);
+  console.log('Session Email:', userEmail);
 
   try {
-    const res = await fetch(`${baseUrl}/fetch_cart_items.php`, {
-      method: "POST",
-      body: formData,
+    const res = await fetch(`http://127.0.0.1:8000/api/cart`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      },
+      body: JSON.stringify({ user_email: userEmail }),
     });
 
     if (!res.ok) {
       throw new Error(`HTTP error! status: ${res.status}`);
     }
 
-    const responseText = await res.text();
-    let data;
-    
-    try {
-      data = JSON.parse(responseText);
-    } catch (parseError) {
-      console.error('Invalid JSON response from cart API:', responseText);
-      console.error('Parse error:', parseError);
-      setCartData([]);
-      return;
-    }
+    const data = await res.json();
 
-    console.log("Cart data received:", data);
+    console.log('Cart data received:', data);
 
-    if (data.cart) {
-      const cartItems: CartItems[] = data.cart;
-      setCartData(cartItems);
+    const cartItems: CartItems[] = data.cart_items ?? [];
+    setCartData(cartItems);
 
+    if (cartItems.length > 0) {
       const uniqueCategories = [
         ...new Set(cartItems.map((item) => item.product_category)),
-      ] as string[];
+      ];
       const productIds = cartItems.map((item) => item.product_id.toString());
 
-      console.log("Unique categories from cart:", uniqueCategories);
-      console.log("Product IDs from cart:", productIds);
+      console.log('Unique categories from cart:', uniqueCategories);
+      console.log('Product IDs from cart:', productIds);
 
-      if (uniqueCategories.length > 0) {
-        await fetchMatchingItems(uniqueCategories, productIds);
-      }
-    } else {
-      setCartData([]);
+      await fetchMatchingItems(uniqueCategories, productIds);
     }
+
   } catch (err) {
-    console.error("Error fetching cart items:", err);
+    console.error('Error fetching cart items:', err);
     setCartData([]);
   } finally {
     setCartLoading(false);
@@ -309,56 +292,57 @@ const fetchProducts = async (): Promise<void> => {
 };
 
 
-const handleRemoveItem = async (id: string, change: number) => {
-  const formdata = new FormData();
-  formdata.append('id', id);
-  formdata.append('change', change.toString());
-
+  const handleRemoveItem = async (id: string) => {
   try {
-    const response = await fetch(`${baseUrl}/edit_cart_items.php`, {
-      method: 'POST',
-      body: formdata,
+    const response = await fetch(`http://127.0.0.1:8000/api/cart/${id}`, {
+      method: 'DELETE',
+      headers: {
+        "Accept": "application/json"
+      },
     });
+
     const data = await response.json();
-    console.log('Delete Response:', data);
+    console.log("Delete Response:", data);
 
     // update cartCount in localStorage
-    const storedCount =
-      parseInt(localStorage.getItem('cartCount') ?? '0', 10) || 0;
+    const storedCount = parseInt(localStorage.getItem('cartCount') ?? '0', 10) || 0;
     const newCartCount = Math.max(storedCount - 1, 0);
     localStorage.setItem('cartCount', newCartCount.toString());
 
-    const newCart = localStorage.getItem('cartCount');
-    console.log('new Cart Count -> ', newCart);
+    console.log('new Cart Count -> ', newCartCount);
 
-    // refresh cart from backend
+    // refresh cart list
     fetchProducts();
   } catch (error) {
-    console.error('Error deleting :', error);
+    console.error("Error deleting item:", error);
   }
 };
 
 
-  const handleQuantityChange = async (id: string, change: number) => {
-    const formdata = new FormData();
-    formdata.append('id', id);
-    formdata.append('change', change.toString());
-    try {
-      const response = await fetch(`${baseUrl}/edit_cart_items.php`, {
-        method: 'POST',
-        body: formdata,
-      });
-      const data = await response.json();
-      console.log('Update Quantity Response:', data);
-      fetchProducts();
-    } catch (error) {
-      console.error('Error updating quantity:', error);
-    }
-  };
+const handleQuantityChange = async (id: string, change: number) => {
+  try {
+    const response = await fetch(`http://127.0.0.1:8000/api/cart/${id}`, {
+      method: 'PATCH',
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json"
+      },
+      body: JSON.stringify({ change }),
+    });
+
+    const data = await response.json();
+    console.log("Update Quantity Response:", data);
+
+    fetchProducts(); // refresh cart
+  } catch (error) {
+    console.error("Error updating quantity:", error);
+  }
+};
+
 
   const calculateSubtotal = () => {
     return cartData
-      .filter(item => item.selected) // Only calculate for selected items
+      .filter((item) => item.selected) // Only calculate for selected items
       .reduce((total, item) => total + item.product_price * item.product_quantity, 0);
   };
 
@@ -366,7 +350,7 @@ const handleRemoveItem = async (id: string, change: number) => {
     // Sum Cash-on-Delivery (shipping) safely, falling back to 0 when missing/invalid
     // Only for selected items
     const codTotal = cartData
-      .filter(item => item.selected) // Only calculate for selected items
+      .filter((item) => item.selected) // Only calculate for selected items
       .reduce((total, item) => {
         // Try primary field
         const primary =
@@ -379,17 +363,12 @@ const handleRemoveItem = async (id: string, change: number) => {
             ? (item as any).product_cod
             : Number((item as any).product_cod);
 
-        const cod = Number.isFinite(primary)
-          ? primary
-          : Number.isFinite(legacy)
-          ? legacy
-          : 0;
+        const cod = Number.isFinite(primary) ? primary : Number.isFinite(legacy) ? legacy : 0;
 
         return total + cod;
       }, 0);
 
     return codTotal; // return as number
-
   };
 
   const calculateTotal = () => {
@@ -628,10 +607,7 @@ const handleRemoveItem = async (id: string, change: number) => {
             className="grid grid-cols-1 lg:grid-cols-4 gap-6"
           >
             {/* Main Cart Section */}
-            <motion.div
-              className="lg:col-span-3 space-y-4"
-              variants={fadeInVariants}
-            >
+            <motion.div className="lg:col-span-3 space-y-4" variants={fadeInVariants}>
               {/* Categories and Controls Section - Desktop only, mobile gets simplified */}
               <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
                 <div className="flex items-center justify-between">
@@ -645,13 +621,16 @@ const handleRemoveItem = async (id: string, change: number) => {
                         className="h-4 w-4 text-yellow-500 focus:ring-yellow-500 border-gray-300 rounded cursor-pointer"
                         onChange={(e) => {
                           const isChecked = e.target.checked;
-                          setCartData(prevItems =>
-                            prevItems.map(item => ({ ...item, selected: isChecked }))
+                          setCartData((prevItems) =>
+                            prevItems.map((item) => ({ ...item, selected: isChecked }))
                           );
                         }}
-                        checked={cartData.length > 0 && cartData.every(item => item.selected)}
+                        checked={cartData.length > 0 && cartData.every((item) => item.selected)}
                       />
-                      <label htmlFor="select-all-mobile" className="text-xs text-gray-600 cursor-pointer">
+                      <label
+                        htmlFor="select-all-mobile"
+                        className="text-xs text-gray-600 cursor-pointer"
+                      >
                         ALL ({cartData.length})
                       </label>
                     </div>
@@ -679,11 +658,11 @@ const handleRemoveItem = async (id: string, change: number) => {
                         className="h-4 w-4 text-yellow-500 focus:ring-yellow-500 border-gray-300 rounded cursor-pointer"
                         onChange={(e) => {
                           const isChecked = e.target.checked;
-                          setCartData(prevItems =>
-                            prevItems.map(item => ({ ...item, selected: isChecked }))
+                          setCartData((prevItems) =>
+                            prevItems.map((item) => ({ ...item, selected: isChecked }))
                           );
                         }}
-                        checked={cartData.length > 0 && cartData.every(item => item.selected)}
+                        checked={cartData.length > 0 && cartData.every((item) => item.selected)}
                       />
                       <label htmlFor="select-all" className="text-sm text-gray-600 cursor-pointer">
                         SELECT ALL ({cartData.length} ITEM{cartData.length !== 1 ? 'S' : ''})
@@ -696,10 +675,10 @@ const handleRemoveItem = async (id: string, change: number) => {
                     className="flex items-center space-x-1 text-gray-500 hover:text-red-500 px-3 py-2"
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
-                    disabled={!cartData.some(item => item.selected)}
+                    disabled={!cartData.some((item) => item.selected)}
                     onClick={() => {
-                      const selectedItems = cartData.filter(item => item.selected);
-                      selectedItems.forEach(item => handleRemoveItem(item.id, 3));
+                      const selectedItems = cartData.filter((item) => item.selected);
+                      selectedItems.forEach((item) => handleRemoveItem(item.id, 3));
                     }}
                   >
                     <span className="text-sm">🗑️</span>
@@ -735,8 +714,8 @@ const handleRemoveItem = async (id: string, change: number) => {
                                 type="checkbox"
                                 checked={item.selected}
                                 onChange={() => {
-                                  setCartData(prevItems =>
-                                    prevItems.map(cartItem =>
+                                  setCartData((prevItems) =>
+                                    prevItems.map((cartItem) =>
                                       cartItem.id === item.id
                                         ? { ...cartItem, selected: !cartItem.selected }
                                         : cartItem
@@ -763,9 +742,11 @@ const handleRemoveItem = async (id: string, change: number) => {
                                 />
                                 {item.product_OriginalPrice && (
                                   <div className="absolute top-0 left-0 bg-red-500 text-white text-xs font-bold px-1 py-0.5 rounded text-[10px]">
-                                    -{Math.round(
+                                    -
+                                    {Math.round(
                                       (1 - item.product_price / item.product_OriginalPrice) * 100
-                                    )}%
+                                    )}
+                                    %
                                   </div>
                                 )}
                               </div>
@@ -784,7 +765,7 @@ const handleRemoveItem = async (id: string, change: number) => {
                               <div className="text-xs text-gray-400 mt-1">
                                 Color: {item.product_selected_color}
                               </div>
-                              
+
                               {/* Price - Mobile */}
                               <div className="mt-2 flex items-center space-x-1">
                                 <span className="text-sm font-semibold text-orange-500">
@@ -852,8 +833,8 @@ const handleRemoveItem = async (id: string, change: number) => {
                                 type="checkbox"
                                 checked={item.selected}
                                 onChange={() => {
-                                  setCartData(prevItems =>
-                                    prevItems.map(cartItem =>
+                                  setCartData((prevItems) =>
+                                    prevItems.map((cartItem) =>
                                       cartItem.id === item.id
                                         ? { ...cartItem, selected: !cartItem.selected }
                                         : cartItem
@@ -880,9 +861,11 @@ const handleRemoveItem = async (id: string, change: number) => {
                                 />
                                 {item.product_OriginalPrice && (
                                   <div className="absolute top-1 left-1 bg-red-500 text-white text-xs font-bold px-1 py-0.5 rounded">
-                                    -{Math.round(
+                                    -
+                                    {Math.round(
                                       (1 - item.product_price / item.product_OriginalPrice) * 100
-                                    )}%
+                                    )}
+                                    %
                                   </div>
                                 )}
                               </div>
@@ -903,7 +886,7 @@ const handleRemoveItem = async (id: string, change: number) => {
                                       Color: {item.product_selected_color}
                                     </span>
                                   </div>
-                                  
+
                                   {/* Price */}
                                   <div className="mt-2 flex items-center space-x-2">
                                     <span className="text-lg font-semibold text-orange-500">
@@ -1029,29 +1012,30 @@ const handleRemoveItem = async (id: string, change: number) => {
             </motion.div>
 
             {/* Order Summary Sidebar */}
-            <motion.div
-              className="lg:col-span-1"
-              variants={fadeInVariants}
-            >
+            <motion.div className="lg:col-span-1" variants={fadeInVariants}>
               {/* Mobile: Fixed bottom summary */}
               <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 z-40">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm text-gray-600">Total ({cartData.filter(item => item.selected).length} items)</span>
-                  <span className="text-lg font-bold text-orange-500">Rs. {calculateTotal().toLocaleString()}</span>
+                  <span className="text-sm text-gray-600">
+                    Total ({cartData.filter((item) => item.selected).length} items)
+                  </span>
+                  <span className="text-lg font-bold text-orange-500">
+                    Rs. {calculateTotal().toLocaleString()}
+                  </span>
                 </div>
                 <Link href={'/cart/shippingdetails'}>
                   <Button
                     onClick={handleCheckout}
-                    disabled={cartData.filter(item => item.selected).length === 0}
+                    disabled={cartData.filter((item) => item.selected).length === 0}
                     loading={checkoutLoading}
                     loadingText="Processing..."
                     className={`w-full py-3 rounded-md font-medium text-sm ${
-                      cartData.filter(item => item.selected).length === 0
+                      cartData.filter((item) => item.selected).length === 0
                         ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
                         : 'bg-orange-500 hover:bg-orange-600 text-white'
                     }`}
                   >
-                    CHECKOUT ({cartData.filter(item => item.selected).length})
+                    CHECKOUT ({cartData.filter((item) => item.selected).length})
                   </Button>
                 </Link>
               </div>
@@ -1061,18 +1045,24 @@ const handleRemoveItem = async (id: string, change: number) => {
                 <div className="p-4 border-b border-gray-200">
                   <h2 className="text-lg font-semibold text-gray-900">Order Summary</h2>
                 </div>
-                
+
                 <div className="p-4 space-y-4">
                   {/* Subtotal */}
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Subtotal ({cartData.filter(item => item.selected).length} items)</span>
-                    <span className="font-medium text-gray-900">Rs. {calculateSubtotal().toLocaleString()}</span>
+                    <span className="text-gray-600">
+                      Subtotal ({cartData.filter((item) => item.selected).length} items)
+                    </span>
+                    <span className="font-medium text-gray-900">
+                      Rs. {calculateSubtotal().toLocaleString()}
+                    </span>
                   </div>
-                  
+
                   {/* Shipping Fee */}
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600">Shipping Fee</span>
-                    <span className="font-medium text-gray-900">Rs. {calculateCod().toLocaleString()}</span>
+                    <span className="font-medium text-gray-900">
+                      Rs. {calculateCod().toLocaleString()}
+                    </span>
                   </div>
 
                   {discount > 0 && (
@@ -1087,7 +1077,9 @@ const handleRemoveItem = async (id: string, change: number) => {
                   {/* Total */}
                   <div className="flex justify-between">
                     <span className="text-lg font-semibold text-gray-900">Total</span>
-                    <span className="text-lg font-bold text-orange-500">Rs. {calculateTotal().toLocaleString()}</span>
+                    <span className="text-lg font-bold text-orange-500">
+                      Rs. {calculateTotal().toLocaleString()}
+                    </span>
                   </div>
 
                   {/* Voucher Code */}
@@ -1104,9 +1096,9 @@ const handleRemoveItem = async (id: string, change: number) => {
                         onClick={handleApplyPromo}
                         loading={checkoutLoading}
                         loadingText="Applying..."
-                        disabled={cartData.filter(item => item.selected).length === 0}
+                        disabled={cartData.filter((item) => item.selected).length === 0}
                         className={`px-4 py-2 rounded-md font-medium text-sm ${
-                          cartData.filter(item => item.selected).length === 0
+                          cartData.filter((item) => item.selected).length === 0
                             ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
                             : 'bg-yellow-500 hover:bg-yellow-600 text-white'
                         }`}
@@ -1132,16 +1124,16 @@ const handleRemoveItem = async (id: string, change: number) => {
                   <Link href={'/cart/shippingdetails'}>
                     <Button
                       onClick={handleCheckout}
-                      disabled={cartData.filter(item => item.selected).length === 0}
+                      disabled={cartData.filter((item) => item.selected).length === 0}
                       loading={checkoutLoading}
                       loadingText="Processing..."
                       className={`w-full py-3 rounded-md font-medium text-sm ${
-                        cartData.filter(item => item.selected).length === 0
+                        cartData.filter((item) => item.selected).length === 0
                           ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
                           : 'bg-orange-500 hover:bg-orange-600 text-white'
                       }`}
                     >
-                      PROCEED TO CHECKOUT({cartData.filter(item => item.selected).length})
+                      PROCEED TO CHECKOUT({cartData.filter((item) => item.selected).length})
                     </Button>
                   </Link>
                 </div>
@@ -1218,18 +1210,24 @@ const handleRemoveItem = async (id: string, change: number) => {
                   </div>
 
                   <div className="p-3 md:p-4">
-                    <h3 className="font-medium text-black text-sm md:text-base line-clamp-2">{product.name}</h3>
+                    <h3 className="font-medium text-black text-sm md:text-base line-clamp-2">
+                      {product.name}
+                    </h3>
                     <div className="flex items-center mt-1 mb-2">
                       <div className="flex">
                         <Star className="h-3 w-3 md:h-4 md:w-4 text-yellow-500 fill-yellow-500" />
                       </div>
-                      <span className="text-xs md:text-sm text-gray-500 ml-1">{product.rating}</span>
+                      <span className="text-xs md:text-sm text-gray-500 ml-1">
+                        {product.rating}
+                      </span>
                     </div>
                     <div className="flex items-center gap-2">
                       <p className="font-medium text-orange-500 text-sm md:text-base">
                         {(() => {
                           const n = parsePriceToNumber(String(product.price));
-                          return n != null ? formatPriceLKR(n) : `Rs ${product.price.toLocaleString()}`;
+                          return n != null
+                            ? formatPriceLKR(n)
+                            : `Rs ${product.price.toLocaleString()}`;
                         })()}
                       </p>
                     </div>

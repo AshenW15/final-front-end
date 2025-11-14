@@ -73,18 +73,28 @@ export default function CheckoutPage() {
   const [hasSavedAddress, setHasSavedAddress] = useState(false);
 
   const getShippingAddress = useCallback(async () => {
-    const formdata = new FormData();
     const currentloggedInEmail = user?.email;
-    formdata.append('email', currentloggedInEmail || '');
+
+    if (!currentloggedInEmail) {
+      console.warn('User email is missing');
+      return;
+    }
 
     try {
-      const response = await fetch(`${baseUrl}/get_default_shipping_address.php`, {
+      const response = await fetch(`http://127.0.0.1:8000/api/getShippingAddress`, {
         method: 'POST',
-        body: formdata,
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+        },
+        body: JSON.stringify({
+          user_email: currentloggedInEmail,
+        }),
       });
 
       const data = await response.json();
-      console.log(data);
+      console.log('Shipping Address Response:', data);
+
       if (data.billingAddress) {
         setHasSavedAddress(true);
         setShippingData((prev) => ({
@@ -95,7 +105,7 @@ export default function CheckoutPage() {
         setHasSavedAddress(false);
       }
     } catch (error) {
-      console.error('Error fetching shipping data:', error);
+      console.error('Error fetching shipping address:', error);
       setHasSavedAddress(false);
     }
   }, [user?.email]);
@@ -107,7 +117,7 @@ export default function CheckoutPage() {
   const [shippingData, setShippingData] = useState<ShippingForm>({
     firstName: '',
     lastName: '',
-  country: 'Sri Lanka (Rs)',
+    country: 'Sri Lanka (Rs)',
     address: '',
     addressLine2: '',
     city: '',
@@ -250,30 +260,36 @@ export default function CheckoutPage() {
 
     console.log('submit final order: ');
     console.log('Order data : ', checkoutList);
-    console.log('Shiping Data : ', shippingData);
+    console.log('Shipping Data : ', shippingData);
     console.log('Order Number : ', orderNumber);
-    console.log('Delivary date: ', deliveryDate);
+    console.log('Delivery date: ', deliveryDate);
     console.log('Special Note : ', specialInstructions);
     console.log('Total Fee : ', calculatTotal());
     console.log('user Email : ', userEmail);
 
-    const formdata = new FormData();
-    formdata.append('OrderData', JSON.stringify(checkoutList ?? null));
-    // formdata.append('ShippingData', JSON.stringify(shippingData ?? null));
+    // Prepare payload for Laravel API
+    const payload = {
+      orderData: checkoutList,
+      orderNumber: orderNumber,
+      deliveryDate: deliveryDate,
+      note: specialInstructions,
+      totalFee: calculatTotal(),
+      userEmail: userEmail,
+    };
+
+    // Only include shipping data if needed
     if (!hasSavedAddress || addressState === 'new') {
-      formdata.append('ShippingData', JSON.stringify(shippingData ?? null));
+      payload.shippingData = shippingData;
     }
 
-    formdata.append('OrderNumber', orderNumber);
-    formdata.append('DelivaryDate', deliveryDate);
-    formdata.append('Note', specialInstructions);
-    formdata.append('TotalFee', calculatTotal().toString());
-    formdata.append('UserEmail', userEmail);
-
     try {
-      const response = await fetch(`${baseUrl}/save_order_details.php`, {
+      const response = await fetch('http://127.0.0.1:8000/api/saveOrderDetails', {
         method: 'POST',
-        body: formdata,
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
       });
 
       const data = await response.json();
@@ -288,9 +304,13 @@ export default function CheckoutPage() {
         const formdata = new FormData();
         formdata.append('ids', JSON.stringify(ids));
         try {
-          const response = await fetch(`${baseUrl}/delete_cart_items.php`, {
-            method: 'POST',
-            body: formdata,
+          const response = await fetch('http://127.0.0.1:8000/api/deletecartitems', {
+            method: 'DELETE',
+            headers: {
+              Accept: 'application/json',
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ ids: ids }),
           });
 
           const data = await response.json();
@@ -364,7 +384,7 @@ export default function CheckoutPage() {
       setShippingData({
         firstName: '',
         lastName: '',
-  country: 'Sri Lanka (Rs)',
+        country: 'Sri Lanka (Rs)',
         address: '',
         addressLine2: '',
         city: '',
