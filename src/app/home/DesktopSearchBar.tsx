@@ -30,13 +30,16 @@ export default function DesktopSearchBar() {
   const router = useRouter();
 
   // Handle search functionality (from original Header)
-  const handleSearch = useCallback(async (e?: React.FormEvent) => {
-    e?.preventDefault();
-    if (localSearchQuery.trim()) {
-      router.push(`/search?query=${encodeURIComponent(localSearchQuery)}`);
-      setIsSearchHistoryOpen(false);
-    }
-  }, [localSearchQuery, router]);
+  const handleSearch = useCallback(
+    async (e?: React.FormEvent) => {
+      e?.preventDefault();
+      if (localSearchQuery.trim()) {
+        router.push(`/search?query=${encodeURIComponent(localSearchQuery)}`);
+        setIsSearchHistoryOpen(false);
+      }
+    },
+    [localSearchQuery, router]
+  );
 
   // Handle input change (from original Header)
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -58,36 +61,38 @@ export default function DesktopSearchBar() {
     <div className="lg:hidden bg-yellow-500 px-4 py-3 sticky top-0 z-50">
       <div className="relative w-full" ref={searchBarRef}>
         <form onSubmit={handleSearch}>
-          <div className="flex items-center border-2 border-yellow-500 rounded-full px-3 py-2 bg-white focus-within:ring-2 focus-within:ring-yellow-300 transition-all duration-200">
+          <div className="flex items-center border border-gray-300 rounded-full px-4 py-1.5 bg-white hover:shadow-sm transition-all duration-200">
             <input
               type="text"
               placeholder="Search in Storevia"
               value={localSearchQuery}
               onChange={handleInputChange}
               onFocus={() => setIsSearchHistoryOpen(true)}
-              className="bg-transparent outline-none text-gray-900 w-full placeholder-gray-400 text-sm"
+              className="bg-transparent outline-none text-gray-700 w-full placeholder-gray-400 text-sm"
             />
+
             {localSearchQuery && (
               <motion.button
                 onClick={() => setLocalSearchQuery('')}
                 type="button"
                 whileHover="hover"
                 whileTap="tap"
-                className="bg-gray-300 rounded-full p-1 mr-2"
+                className="rounded-full p-1 hover:bg-gray-200 transition"
                 aria-label="Clear search"
               >
-                <X className="w-3 h-3 text-gray-900" />
+                <X className="w-4 h-4 text-gray-600" />
               </motion.button>
             )}
+
             <motion.button
               type="submit"
               variants={searchButtonVariants}
               whileHover="hover"
               whileTap="tap"
-              className="bg-yellow-500 hover:bg-yellow-600 rounded-full p-2"
+              className="p-2 rounded-full hover:bg-gray-100 transition"
               aria-label="Search"
             >
-              <Search className="w-5 h-5 text-gray-900" />
+              <Search className="w-5 h-5 text-gray-600" />
             </motion.button>
           </div>
         </form>
@@ -129,9 +134,7 @@ export default function DesktopSearchBar() {
                   ))}
                 </div>
               ) : (
-                <div className="px-4 py-3 text-sm text-gray-500">
-                  No search history available
-                </div>
+                <div className="px-4 py-3 text-sm text-gray-500">No search history available</div>
               )}
             </motion.div>
           )}

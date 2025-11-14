@@ -43,19 +43,6 @@ const ProductListings: React.FC = () => {
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
   const backendUrl = process.env.BACKEND_URL;
 
-  // Calculate discount percentage
-  // const calculateDiscountPercentage = (discount: number, originalPrice: number): number => {
-  //   const d = parsePriceToNumber(discount);
-  //   const p = parsePriceToNumber(originalPrice);
-
-  //   if (d == null || p == null || p <= 0 || d <= 0) return 0;
-
-  //   // If "discount" means the amount reduced (e.g., price 100, discount 20 → 20%)
-  //   return Math.round((d / p) * 100);
-
-  //   // If "discount" already means the final discounted price (e.g., price 100, discount 80 → 20% off)
-  //   // return Math.round(((p - d) / p) * 100);
-  // };
 
   const calculateDiscountPrice = (originalPrice: string, discount: number): string => {
     const p = parsePriceToNumber(originalPrice);

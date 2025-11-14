@@ -1,13 +1,9 @@
-/* eslint-disable @next/next/no-img-element */
 /* eslint-disable react-hooks/exhaustive-deps */
-import { FC, useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
+import { FC, useEffect, useRef, useState } from "react";
 
 interface Category {
   category_id: number;
   category_name: string;
-  category_icon: string | null;
-  width?: 'normal' | 'wide';
 }
 
 const ShopByCategory: FC = () => {
@@ -15,15 +11,24 @@ const ShopByCategory: FC = () => {
   const [loading, setLoading] = useState(false);
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
 
+  const [activeCategory, setActiveCategory] = useState("All");
+  const [showDropdown, setShowDropdown] = useState(false);
+
+  // refs for click outside
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+
+  const VISIBLE_COUNT = 8;
+
   useEffect(() => {
     const fetchCategories = async () => {
       setLoading(true);
       try {
         const response = await fetch(`${baseUrl}/fetch_categories.php`);
         const data = await response.json();
-        setCategories(data.categories.slice(0, 16)); // Show max 16 categories
+        setCategories(data.categories.slice(0, 16));
       } catch (error) {
-        console.error('Error fetching categories:', error);
+        console.error("Error fetching categories:", error);
       } finally {
         setLoading(false);
       }
@@ -32,99 +37,92 @@ const ShopByCategory: FC = () => {
     fetchCategories();
   }, []);
 
+  const visibleCategories = categories.slice(0, VISIBLE_COUNT);
+  const hiddenCategories = categories.slice(VISIBLE_COUNT);
+
+  // CLICK OUTSIDE HANDLER
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node) &&
+        buttonRef.current &&
+        !buttonRef.current.contains(event.target as Node)
+      ) {
+        setShowDropdown(false);
+      }
+    };
+
+    if (showDropdown) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showDropdown]);
+
   return (
-    <div className="bg-white py-8">
+    <div className="relative bg-white py-3 border-b border-gray-200">
       <div className="max-w-7xl mx-auto px-4">
-        {/* Header */}
-        <div className="mb-6">
-          <h2 className="text-2xl font-bold text-gray-900">Categories</h2>
+
+        {/* Category Row */}
+        <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm font-medium">
+
+          {/* All Categories tab */}
+          <button
+            ref={buttonRef}
+            onClick={() => {
+              setActiveCategory("All");
+              setShowDropdown(!showDropdown);
+            }}
+            className={`pb-1 transition-all ${
+              activeCategory === "All"
+                ? "text-orange-600 border-b-2 border-orange-600"
+                : "text-gray-700 hover:text-orange-500"
+            }`}
+          >
+            All Categories ▾
+          </button>
+
+          {/* Show only 6 categories */}
+          {visibleCategories.map((cat) => (
+            <button
+              key={cat.category_id}
+              onClick={() => {
+                setActiveCategory(cat.category_name);
+                setShowDropdown(false);
+              }}
+              className={`pb-1 transition-all ${
+                activeCategory === cat.category_name
+                  ? "text-orange-600 border-b-2 border-orange-600"
+                  : "text-gray-700 hover:text-orange-500"
+              }`}
+            >
+              {cat.category_name}
+            </button>
+          ))}
         </div>
 
-        {loading ? (
-          <div className="text-center text-gray-600">Loading categories...</div>
-        ) : (
-          <>
-            {/* Mobile Categories Layout - Horizontal scroll with larger items */}
-            <div className="lg:hidden">
-              <div className="flex space-x-4 overflow-x-auto scrollbar-hide pb-4">
-                {categories.slice(0, 8).map((category, index) => (
-                  <motion.div
-                    key={category.category_id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3, delay: index * 0.05 }}
-                    whileHover={{ scale: 1.02 }}
-                    className="flex-shrink-0 w-20 flex flex-col items-center cursor-pointer group"
-                  >
-                    {/* Category Icon - Rectangular card */}
-                    <div className="w-20 h-16 flex items-center justify-center mb-2 bg-white rounded-xl shadow-sm border border-gray-100 group-hover:shadow-md transition-all">
-                      {category.category_icon && category.category_icon.startsWith('/images/') ? (
-                        <img
-                          src={`${baseUrl}${category.category_icon}`}
-                          alt={category.category_name}
-                          className="w-8 h-8 object-contain"
-                        />
-                      ) : (
-                        <span className="text-xl">{category.category_icon || '📦'}</span>
-                      )}
-                    </div>
-
-                    {/* Category Name */}
-                    <p className="text-xs font-medium text-gray-700 text-center leading-tight max-w-[70px] group-hover:text-orange-500 transition-colors">
-                      {category.category_name}
-                    </p>
-                  </motion.div>
-                ))}
-                
-                {/* View More Button for Mobile */}
-                <motion.div
-                  whileHover={{ scale: 1.02 }}
-                  className="flex-shrink-0 w-20 flex flex-col items-center cursor-pointer group"
-                >
-                  <div className="w-20 h-16 flex items-center justify-center mb-2 bg-white rounded-xl border border-dashed border-gray-300 shadow-sm">
-                    <span className="text-xl text-gray-400">+</span>
-                  </div>
-                  <p className="text-xs font-medium text-gray-400 text-center leading-tight">
-                    View More
-                  </p>
-                </motion.div>
-              </div>
-            </div>
-
-            {/* Desktop Categories Grid - Keep original layout */}
-            <div className="hidden lg:block">
-              <div className="grid grid-cols-4 md:grid-cols-8 gap-4">
-                {categories.map((category, index) => (
-                  <motion.div
-                    key={category.category_id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3, delay: index * 0.05 }}
-                    whileHover={{ scale: 1.05 }}
-                    className="flex flex-col items-center p-4 rounded-lg hover:bg-gray-50 transition-all cursor-pointer border border-gray-100"
-                  >
-                    {/* Category Icon */}
-                    <div className="w-12 h-12 md:w-16 md:h-16 flex items-center justify-center mb-2 bg-gray-100 rounded-lg">
-                      {category.category_icon && category.category_icon.startsWith('/images/') ? (
-                        <img
-                          src={`${baseUrl}${category.category_icon}`}
-                          alt={category.category_name}
-                          className="w-8 h-8 md:w-10 md:h-10 object-contain"
-                        />
-                      ) : (
-                        <span className="text-2xl md:text-3xl">{category.category_icon || '📦'}</span>
-                      )}
-                    </div>
-
-                    {/* Category Name */}
-                    <p className="text-xs md:text-sm font-medium text-gray-700 text-center leading-tight">
-                      {category.category_name}
-                    </p>
-                  </motion.div>
-                ))}
-              </div>
-            </div>
-          </>
+        {/* Dropdown */}
+        {showDropdown && hiddenCategories.length > 0 && (
+          <div
+            ref={dropdownRef}
+            className="absolute mt-2 bg-white shadow-lg border border-gray-200 rounded-md w-56 z-50"
+          >
+            {hiddenCategories.map((cat) => (
+              <button
+                key={cat.category_id}
+                onClick={() => {
+                  setActiveCategory(cat.category_name);
+                  setShowDropdown(false);
+                }}
+                className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition"
+              >
+                {cat.category_name}
+              </button>
+            ))}
+          </div>
         )}
       </div>
     </div>

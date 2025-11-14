@@ -12,6 +12,10 @@ export default function Home() {
     <main className="flex-grow">
       {/* Desktop Search Bar - Only visible on mobile */}
       <DesktopSearchBar />
+
+
+      {/* Categories - Different layouts for mobile/desktop */}
+      <ShopByCategory />
       
       {/* Banner with mobile and desktop versions */}
       <Banner />
@@ -22,8 +26,7 @@ export default function Home() {
       {/* Today's Deals - Visible on all devices */}
       <TodayDeals />
       
-      {/* Categories - Different layouts for mobile/desktop */}
-      <ShopByCategory />
+      
       
       {/* Product Listings - Visible on all devices */}
       <ProductListings />

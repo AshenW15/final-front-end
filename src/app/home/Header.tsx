@@ -32,7 +32,12 @@ interface HeaderProps {
   showSearch?: boolean;
 }
 
-const Header: FC<HeaderProps> = ({ onBecomeSellerClick, searchQuery = '', setSearchQuery, showSearch = true }) => {
+const Header: FC<HeaderProps> = ({
+  onBecomeSellerClick,
+  searchQuery = '',
+  setSearchQuery,
+  showSearch = true,
+}) => {
   const { user, logout } = useAuth();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
@@ -67,49 +72,6 @@ const Header: FC<HeaderProps> = ({ onBecomeSellerClick, searchQuery = '', setSea
   const [cartData, setCartData] = useState<CartItems[]>([]);
   const [displayCartCount, setDisplayCartCount] = useState(0);
 
-  // Working Code (below)
-
-  // const fetchProductsToCart = useCallback(async (): Promise<void> => {
-  //   let userEmail = user?.email || '';
-
-  //   // Only check sessionStorage in browser
-  //   if (!userEmail && typeof window !== 'undefined') {
-  //     userEmail = sessionStorage.getItem('userEmail') || '';
-  //   }
-
-  //   console.log('User Email:', userEmail);
-  //   setIsLoading(true);
-
-  //   const formdata = new FormData();
-  //   formdata.append('user_email', userEmail);
-
-  //   try {
-  //     const response = await fetch(`${baseUrl}/fetch_cart_items.php`, {
-  //       method: 'POST',
-  //       body: formdata,
-  //     });
-  //     const data = await response.json();
-
-  //     console.log('Fetched Data:', data);
-
-  //     if (data.cart) {
-  //       const cartitems: CartItems[] = data.cart;
-  //       setCartData(cartitems);
-
-  //       const cartCount = cartitems.length;
-  //       console.log('Header Cart Count -> ', cartCount);
-
-  //       setDisplayCartCount(cartCount);
-  //       if (typeof window !== 'undefined') {
-  //         localStorage.setItem('cartCount', cartCount.toString());
-  //       }
-  //     }
-  //   } catch (err) {
-  //     console.error(err);
-  //   } finally {
-  //     setIsLoading(false);
-  //   }
-  // }, [user?.email]);
 
   const fetchProductsToCart = useCallback(async (): Promise<void> => {
     let userEmail = user?.email || '';
@@ -391,7 +353,7 @@ const Header: FC<HeaderProps> = ({ onBecomeSellerClick, searchQuery = '', setSea
         localStorage.setItem('cartCount', '0');
         localStorage.removeItem('user_id');
         sessionStorage.setItem('userRole', 'guest');
-        document.cookie = "userEmail=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax";
+        document.cookie = 'userEmail=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax';
       }
       await logout();
       if (typeof window !== 'undefined') {
@@ -403,73 +365,73 @@ const Header: FC<HeaderProps> = ({ onBecomeSellerClick, searchQuery = '', setSea
   };
 
   useEffect(() => {
-     const fetchUserProfile = async () => {
-    if (user) {
-       try {
-        const response = await fetch(`${baseUrl}/get_user_profile.php`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            email: user.email, // Pass the user's email to the backend
-          }),
-        });
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const responseText = await response.text();
-        let data;
-        
+    const fetchUserProfile = async () => {
+      if (user) {
         try {
-          data = JSON.parse(responseText);
-        } catch (parseError) {
-          console.error('Invalid JSON response:', responseText);
-          console.error('Parse error:', parseError);
-          // Set default guest state and continue without throwing
+          const response = await fetch(`${baseUrl}/get_user_profile.php`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              email: user.email, // Pass the user's email to the backend
+            }),
+          });
+
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+
+          const responseText = await response.text();
+          let data;
+
+          try {
+            data = JSON.parse(responseText);
+          } catch (parseError) {
+            console.error('Invalid JSON response:', responseText);
+            console.error('Parse error:', parseError);
+            // Set default guest state and continue without throwing
+            setUsername('Guest');
+            setUserImage(null);
+            setLoading(false);
+            return;
+          }
+
+          console.log('Fetched user profile data:', data);
+
+          // If the backend returns the user data, update the profile state
+          if (data.success) {
+            const imageUrl =
+              data.profile_picture &&
+              data.profile_picture.startsWith('https://lh3.googleusercontent.com')
+                ? data.profile_picture // If it's from Google, use the URL directly
+                : `${baseUrl}/${data.profile_picture}`; // If it's a local image, construct the URL
+
+            setUsername(data.first_name + ' ' + data.last_name); // Combine first and last name for the username
+            setUserImage(imageUrl); // Set the profile image
+          } else {
+            console.error('Failed to fetch user profile:', data.message || 'Unknown error');
+            // Set default guest state
+            setUsername('Guest');
+            setUserImage(null);
+          }
+        } catch (err) {
+          console.error('Error fetching user profile:', err);
+          // Set default guest state on error
           setUsername('Guest');
           setUserImage(null);
+        } finally {
           setLoading(false);
-          return;
         }
-
-        console.log('Fetched user profile data:', data);
-
-        // If the backend returns the user data, update the profile state
-        if (data.success) {
-          const imageUrl =
-            data.profile_picture && data.profile_picture.startsWith('https://lh3.googleusercontent.com')
-              ? data.profile_picture // If it's from Google, use the URL directly
-              : `${baseUrl}/${data.profile_picture}`; // If it's a local image, construct the URL
-
-          setUsername(data.first_name + ' ' + data.last_name); // Combine first and last name for the username
-          setUserImage(imageUrl); // Set the profile image
-        } else {
-          console.error('Failed to fetch user profile:', data.message || 'Unknown error');
-          // Set default guest state
-          setUsername('Guest');
-          setUserImage(null);
-        }
-      } catch (err) {
-        console.error('Error fetching user profile:', err);
-        // Set default guest state on error
+      } else {
         setUsername('Guest');
         setUserImage(null);
-      } finally {
         setLoading(false);
       }
-     
-    } else {
-      setUsername('Guest');
-      setUserImage(null);
-      setLoading(false);
-    }
-      };
+    };
 
-  fetchUserProfile();
-}, [user]);
+    fetchUserProfile();
+  }, [user]);
 
   // Add loading animation to here..
   if (loading || !mounted) {
@@ -636,36 +598,38 @@ const Header: FC<HeaderProps> = ({ onBecomeSellerClick, searchQuery = '', setSea
                 <div className="flex-1 max-w-2xl mx-4 lg:mx-8 flex items-center gap-2">
                   <div className="relative w-full" ref={searchBarRef}>
                     <form onSubmit={handleSearch}>
-                      <div className="flex items-center border-2 border-yellow-500 rounded-full px-3 py-2 bg-white focus-within:ring-2 focus-within:ring-yellow-300 transition-all duration-200">
+                      <div className="flex items-center border border-gray-300 px-4 py-1.5 bg-white hover:shadow-sm transition-all duration-200">
                         <input
                           type="text"
                           placeholder="Search in Storevia"
                           value={localSearchQuery}
                           onChange={handleInputChange}
                           onFocus={() => setIsSearchHistoryOpen(true)}
-                          className="bg-transparent outline-none text-gray-900 w-full placeholder-gray-400 text-sm"
+                          className="bg-transparent outline-none text-gray-700 w-full placeholder-gray-400 text-sm"
                         />
+
                         {localSearchQuery && (
                           <motion.button
                             onClick={() => setLocalSearchQuery('')}
                             type="button"
                             whileHover="hover"
                             whileTap="tap"
-                            className="bg-gray-300 rounded-full p-1 mr-2"
+                            className="rounded-full p-1 hover:bg-gray-200 transition"
                             aria-label="Clear search"
                           >
-                            <X className="w-3 h-3 text-gray-900" />
+                            <X className="w-4 h-4 text-gray-600" />
                           </motion.button>
                         )}
+
                         <motion.button
                           type="submit"
                           variants={searchButtonVariants}
                           whileHover="hover"
                           whileTap="tap"
-                          className="bg-yellow-500 hover:bg-yellow-600 rounded-full p-2"
+                          className="p-2 rounded-full hover:bg-gray-100 transition"
                           aria-label="Search"
                         >
-                          <Search className="w-5 h-5 text-gray-900" />
+                          <Search className="w-5 h-5 text-gray-600" />
                         </motion.button>
                       </div>
                     </form>
@@ -715,7 +679,9 @@ const Header: FC<HeaderProps> = ({ onBecomeSellerClick, searchQuery = '', setSea
                               ))}
                             </ul>
                           ) : (
-                            <div className="px-4 py-3 text-sm text-gray-500 text-center">No items</div>
+                            <div className="px-4 py-3 text-sm text-gray-500 text-center">
+                              No items
+                            </div>
                           )}
 
                           {/* Suggestions */}
@@ -747,22 +713,22 @@ const Header: FC<HeaderProps> = ({ onBecomeSellerClick, searchQuery = '', setSea
                       )}
                     </AnimatePresence>
                   </div>
-                  
+
                   {/* Cart Button - Right next to search bar */}
                   <motion.button
                     variants={iconButtonVariants}
                     whileHover="hover"
                     whileTap="tap"
-                    className="flex items-center space-x-2 text-yellow-500 p-2 rounded-full hover:bg-gray-100 relative border-2 border-yellow-500"
+                    className="flex items-center justify-center relative ml-6 "
                     aria-label="Cart menu"
-                    style={{ minWidth: 48, minHeight: 48 }}
+                    // style={{ minWidth: 48, minHeight: 48 }}
                     onClick={(e) => {
                       e.preventDefault();
                       router.push('/cart');
                     }}
                   >
                     <ShoppingCart className="w-6 h-6" />
-                    <span className="absolute top-0 right-0 -mt-1 -mr-1 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center shadow-md">
+                    <span className="absolute top-0 right-0 -mt-1 -mr-4 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center shadow-md">
                       {displayCartCount}
                     </span>
                   </motion.button>
@@ -782,7 +748,9 @@ const Header: FC<HeaderProps> = ({ onBecomeSellerClick, searchQuery = '', setSea
                       className="flex items-center space-x-2 text-gray-900 p-1 lg:p-2 rounded-full hover:bg-gray-100"
                       aria-label="User profile menu"
                     >
-                      <h3 className="text-gray-700" suppressHydrationWarning>{username}</h3>
+                      <h3 className="text-gray-700" suppressHydrationWarning>
+                        {username}
+                      </h3>
                       {userImage && (
                         <Image
                           src={userImage}
@@ -803,7 +771,9 @@ const Header: FC<HeaderProps> = ({ onBecomeSellerClick, searchQuery = '', setSea
                       className="flex items-center space-x-2 text-gray-900 p-1 lg:p-2 rounded-full hover:bg-gray-100"
                       aria-label="User menu"
                     >
-                      <h3 className="text-gray-700" suppressHydrationWarning>Guest</h3>
+                      <h3 className="text-gray-700" suppressHydrationWarning>
+                        Guest
+                      </h3>
                       <User className="w-5 h-5 lg:w-6 lg:h-6" />
                     </motion.button>
                   )}
@@ -875,16 +845,13 @@ const Header: FC<HeaderProps> = ({ onBecomeSellerClick, searchQuery = '', setSea
                 </div>
 
                 {/* Special SuperDeals Section - Moved after user profile */}
-                <motion.div
-                  className="relative group"
-                  transition={{ duration: 0.3 }}
-                >
+                <motion.div className="relative group" transition={{ duration: 0.3 }}>
                   {/* Coming Soon Badge - Positioned above the button */}
-                  <motion.div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-yellow-400 text-white text-xs font-bold px-2 py-1 rounded-full shadow-md z-20 whitespace-nowrap">
+                  {/* <motion.div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-yellow-400 text-white text-xs font-bold px-2 py-1 rounded-full shadow-md z-20 whitespace-nowrap">
                     Coming Soon
-                  </motion.div>
+                  </motion.div> */}
 
-                  <motion.div className="relative flex items-center gap-2 bg-gray-300 text-gray-500 font-bold px-4 py-2 rounded-full shadow-lg cursor-not-allowed">
+                  <motion.div className="relative flex items-center gap-2 bg-amber-200 text-gray-500 font-bold px-4 py-2 rounded-full shadow-lg cursor-pointer">
                     <span className="text-lg">🔥</span>
                     <span className="relative z-10 text-sm font-bold">SuperDeals</span>
                   </motion.div>

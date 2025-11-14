@@ -223,25 +223,6 @@ const RegistrationForm: FC<RegistrationFormProps> = ({ category, onBack }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  // Default Storevia banner
-  // const defaultBanner = `data:image/svg+xml;base64,${btoa(`
-  //   <svg width="1200" height="400" viewBox="0 0 1200 400" fill="none" xmlns="http://www.w3.org/2000/svg">
-  //     <defs>
-  //       <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-  //         <stop offset="0%" style="stop-color:#FFC107;stop-opacity:1" />
-  //         <stop offset="50%" style="stop-color:#FFD54F;stop-opacity:1" />
-  //         <stop offset="100%" style="stop-color:#FFC107;stop-opacity:1" />
-  //       </linearGradient>
-  //     </defs>
-  //     <rect width="1200" height="400" fill="url(#gradient)"/>
-  //     <text x="600" y="200" text-anchor="middle" fill="#000" font-family="Arial, sans-serif" font-size="72" font-weight="bold">Storevia</text>
-  //     <text x="600" y="250" text-anchor="middle" fill="#000" font-family="Arial, sans-serif" font-size="24">Your Store, Your Success</text>
-  //     <circle cx="150" cy="100" r="30" fill="#000" opacity="0.1"/>
-  //     <circle cx="1050" cy="300" r="40" fill="#000" opacity="0.1"/>
-  //     <circle cx="200" cy="350" r="20" fill="#000" opacity="0.1"/>
-  //     <circle cx="1100" cy="150" r="25" fill="#000" opacity="0.1"/>
-  //   </svg>
-  // `)}`;
   const defaultBanner = `${baseUrl}/storeBanners/banner.jpg`;
 
   const [bannerPreview, setBannerPreview] = useState<string>(defaultBanner);
