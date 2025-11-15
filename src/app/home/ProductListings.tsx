@@ -142,7 +142,8 @@ const ProductListings: React.FC = () => {
               <div className="relative overflow-hidden aspect-square">
                 <motion.img
                   whileHover={{ scale: 1.05 }}
-                  src={`${baseUrl}/${product.product_image}`}
+                  // src={`${baseUrl}/${product.product_image}`}
+                  src={`${product.product_image}`}
                   alt={product.product_name}
                   className="w-full h-full object-cover"
                 />

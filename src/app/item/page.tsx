@@ -18,6 +18,7 @@ import {
   MessageCircle,
   Award,
   Check,
+  ShoppingBag,
   ThumbsUp,
   ChevronDown,
   ExternalLink,
@@ -580,10 +581,15 @@ const Item: FC = () => {
   if (!data) {
     return <div>Error: Product not found</div>;
   }
+  // const images =
+  //   data.productImages && data.productImages.length > 0
+  //     ? data.productImages.map((img: { image_path: string }) => `${baseUrl}/${img.image_path}`)
+  //     : [`${baseUrl}/${data.product_image}`];
+
   const images =
     data.productImages && data.productImages.length > 0
-      ? data.productImages.map((img: { image_path: string }) => `${baseUrl}/${img.image_path}`)
-      : [`${baseUrl}/${data.product_image}`];
+      ? data.productImages.map((img: { image_path: string }) => `${img.image_path}`)
+      : [`${data.product_image}`];
 
   //console.log('Images array:', images);
 
@@ -595,12 +601,14 @@ const Item: FC = () => {
     product_stock: data.product_stock,
     sale: data.is_on_sale,
     discount: data.product_discount,
-    thumImage: `${baseUrl}/${data.product_image}`,
+    // thumImage: `${baseUrl}/${data.product_image}`,
+    thumImage: `${data.product_image}`,
 
     images: [
-      `${baseUrl}/${data.product_image}`, // thumbnail first
+      // `${baseUrl}/${data.product_image}`, // thumbnail first
+      `${data.product_image}`, // thumbnail first
       ...(data.productImages && data.productImages.length > 0
-        ? data.productImages.map((img: { image_path: string }) => `${baseUrl}/${img.image_path}`)
+        ? data.productImages.map((img: { image_path: string }) => `${img.image_path}`)
         : []), // no fallback here because thumbnail is already first
     ], // fallback to main image
 
@@ -619,7 +627,7 @@ const Item: FC = () => {
       id: data.storeDetails.store_id,
       store_name: data.storeDetails.store_name,
       slug: data.storeDetails.slug,
-      rating: rating,
+      rating: data.storeDetails.store_ratings,
       followers: '12.5K',
       responseRate: '98%',
       responseTime: 'Within 24 hours',
@@ -916,7 +924,7 @@ const Item: FC = () => {
                           src={image || '/placeholder.svg'}
                           alt={product.name}
                           fill
-                          className="object-contain cursor-zoom-in"
+                          className="object-contain cursor-zoom-in "
                         />
                       </div>
                     </div>
@@ -926,7 +934,7 @@ const Item: FC = () => {
             </div>
 
             {/* Thumbnails Section */}
-            <div className="w-full max-w-[360px] mx-auto">
+            <div className="w-full max-w-[560px] mx-auto">
               <Swiper
                 onSwiper={(swiper) => setThumbsSwiper(swiper)}
                 spaceBetween={14}
@@ -934,17 +942,17 @@ const Item: FC = () => {
                 freeMode={true}
                 watchSlidesProgress={true}
                 modules={[FreeMode, Navigation, Thumbs]}
-                className="thumbs-swiper mb-6"
+                className="thumbs-swiper mb-6 "
               >
                 {product.images.map((image, index) => (
                   <SwiperSlide key={index}>
                     <div
                       className={`cursor-pointer border-2 rounded-md overflow-hidden ${
-                        selectedImage === index ? 'border-yellow-500' : 'border-gray-200'
+                        selectedImage === index ? 'border-gray-500' : 'border-gray-200'
                       }`}
                       onClick={() => handleThumbnailClick(index)} // Update large image
                     >
-                      <div className="relative aspect-square w-[72px] h-[72px]">
+                      <div className="relative aspect-square w-[90px] h-[90px]">
                         <Image
                           src={`${image}`}
                           alt={`Thumbnail ${index + 1}`}
@@ -991,7 +999,7 @@ const Item: FC = () => {
                   />
                   <div className="truncate max-w-xs">
                     <p className="font-medium text-sm text-black truncate">{product.name}</p>
-                    <p className="text-orange-500 font-bold text-sm">
+                    <p className="text-[#a4a4a4] font-bold text-sm">
                       {(() => {
                         const n = parsePriceToNumber(product.price);
                         return n != null ? formatPriceLKR(n) : product.price;
@@ -1005,9 +1013,10 @@ const Item: FC = () => {
                       <Button
                         onClick={() => withLoading(async () => handleBuyNow(product, quantity))}
                         size="sm"
-                        className="px-3 py-2 bg-green-500 text-white rounded-full text-xs font-medium hover:bg-green-600"
+                        className="px-3 py-2 bg-[#010101] text-white rounded-full text-xs font-medium hover:bg-gray-800"
                         loading={isLoading}
                       >
+                        <ShoppingBag />
                         Buy Now
                       </Button>
                       <Button
@@ -1095,21 +1104,13 @@ const Item: FC = () => {
               <div className="flex items-center gap-4 mb-2">
                 <div className="flex items-center">
                   <div className="flex">
-                    <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
+                    <Star className="w-4 h-4 text-[#edcf5d] fill-[#edcf5d]" />
                   </div>
-                  <span className="text-sm text-black ml-1">Ratings {product.reviewCount}</span>
+                  <span className="text-sm text-[#a4a4a4] ml-1">Ratings {product.reviewCount}</span>
                 </div>
-                <span className="text-sm text-black">{product.sold}</span>
+                <span className="text-sm text-[#a4a4a4]">{product.sold}</span>
               </div>
-              <div className="text-sm text-gray-600 mb-4">
-                Brand:{' '}
-                <button
-                  className="text-sky-600 hover:underline"
-                  onClick={() => router.push(`/store?id=${encodeURIComponent(product.store.slug)}`)}
-                >
-                  {product.store.store_name}
-                </button>
-              </div>
+
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -1117,7 +1118,7 @@ const Item: FC = () => {
                 className="mb-6 bg-gray-50 p-4 rounded-lg"
               >
                 <div className="flex items-baseline gap-2">
-                  <span className="text-3xl font-bold text-orange-500">
+                  <span className="text-3xl font-bold text-black">
                     {(() => {
                       const n = parsePriceToNumber(product.price);
                       return n != null ? formatPriceLKR(n) : product.price;
@@ -1125,15 +1126,16 @@ const Item: FC = () => {
                   </span>
                   {product.discount && (
                     <span className="text-sm text-gray-600">
-                      -{String(product.discount).replace(/[^0-9]/g, '')}%
+                      {/* -{String(product.discount).replace(/[^0-9]/g, '')}% */}-
+                      {parseInt(product.discount)}%
                     </span>
                   )}
                 </div>
                 <div className="mt-2 flex items-center">
-                  <span className="text-sm text-gray-700 mr-2">Promotions</span>
-                  <span className="inline-flex items-center bg-orange-100 text-orange-800 text-xs font-medium px-2 py-1 rounded">
+                  {/* <span className="text-sm text-gray-700 mr-2">Promotions</span> */}
+                  {/* <span className="inline-flex items-center bg-orange-100 text-orange-800 text-xs font-medium px-2 py-1 rounded">
                     Min. spend Rs. 2,500 <ChevronDown className="w-3 h-3 ml-1" />
-                  </span>
+                  </span> */}
                 </div>
                 {/* Installment hint removed by request */}
               </motion.div>
@@ -1331,7 +1333,7 @@ const Item: FC = () => {
               ) : null}
               <div className="flex items-center mb-6">
                 <span className="text-sm font-medium text-black mr-4">Quantity:</span>
-                <div className="flex border border-gray-300 rounded-md overflow-hidden">
+                <div className="flex overflow-hidden">
                   <motion.button
                     whileTap={{ scale: 0.9 }}
                     className="px-3 py-2 flex items-center justify-center text-black hover:bg-gray-100 transition-colors"
@@ -1344,7 +1346,7 @@ const Item: FC = () => {
                     type="text"
                     value={quantity}
                     readOnly
-                    className="w-12 text-center py-2 bg-white text-black border-x border-gray-300"
+                    className="w-12 text-center py-2 bg-white text-black "
                   />
                   <motion.button
                     whileTap={{ scale: 0.9 }}
@@ -1361,29 +1363,37 @@ const Item: FC = () => {
                 </span>
               </div>
 
+              <div className="flex items-center mb-6">
+                <span className="text-sm font-medium text-black mr-4"><Truck /></span>
+                <div className="flex overflow-hidden text-sm text-[#5c5c5c]">
+                 Rs. {parseFloat(data.product_cod).toFixed(2)}
+                </div>
+              </div>
+
               {/* Primary CTAs placed after Quantity */}
-              <div className="hidden md:flex flex-col gap-2 mb-6">
+              <div className="hidden md:flex flex-row gap-2 mb-6">
                 {quantity > 0 ? (
                   <>
                     <Button
                       onClick={() => withLoading(async () => handleBuyNow(product, quantity))}
-                      className="w-full bg-green-500 text-white py-3 rounded-full font-medium hover:bg-green-600"
+                      className="w-[50%] bg-[#010101] text-[#f2f0ea] py-3 rounded-md font-medium cursor-pointer hover:bg-gray-800"
                       loading={isLoading}
                     >
-                      Buy Now
+                      <ShoppingBag />Buy Now
                     </Button>
                     <Button
                       onClick={() => withLoading(async () => addToCartHandler(product, quantity))}
-                      className="w-full bg-yellow-500 text-black py-3 rounded-full font-medium hover:bg-yellow-600"
+                      className="w-[50%] bg-[#edcf5d] text-black py-3 rounded-md font-medium hover:bg-yellow-300"
                       loading={isLoading}
                     >
+                      <ShoppingCart />
                       Add to Cart
                     </Button>
                   </>
                 ) : (
                   <Button
                     onClick={handleAddToWishlist}
-                    className="w-full bg-pink-500 text-white py-3 rounded-full font-medium hover:bg-pink-600"
+                    className="w-[50%] bg-[#edcf5d] text-[#010101] py-3 rounded-md font-medium hover:bg-pink-600"
                     loading={isLoading}
                   >
                     Add to Wishlist
@@ -1391,7 +1401,7 @@ const Item: FC = () => {
                 )}
               </div>
               {/* Shipping (address) collapsible to keep CTAs above the fold */}
-              <motion.div
+              {/* <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.3 }}
@@ -1443,16 +1453,16 @@ const Item: FC = () => {
                 )}
 
                 {/* Address dropdown popover */}
-                {addressOpen && (
-                  <div className="absolute z-[10000] mt-2 left-0 right-0 bg-white border border-gray-200 rounded-lg shadow-lg p-3">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs text-gray-500">Select Address</span>
-                      <button
-                        className="text-gray-400 hover:text-gray-600"
-                        onClick={() => setAddressOpen(false)}
-                        aria-label="Close address selector"
-                      >
-                        <X className="w-4 h-4" />
+              {/* {addressOpen && (
+                    <div className="absolute z-[10000] mt-2 left-0 right-0 bg-white border border-gray-200 rounded-lg shadow-lg p-3">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-xs text-gray-500">Select Address</span>
+                        <button
+                          className="text-gray-400 hover:text-gray-600"
+                          onClick={() => setAddressOpen(false)}
+                          aria-label="Close address selector"
+                        > */}
+              {/* <X className="w-4 h-4" />
                       </button>
                     </div>
                     <div className="relative mb-3">
@@ -1498,8 +1508,8 @@ const Item: FC = () => {
                               ))}
                           </div>
                         </div>
-                      ))}
-                    </div>
+                      ))} */}
+              {/* </div>
                     <div className="mt-2 flex items-center justify-between">
                       <button
                         className="text-sky-600 text-sm hover:underline"
@@ -1526,9 +1536,9 @@ const Item: FC = () => {
                         Clear
                       </button>
                     </div>
-                  </div>
-                )}
-              </motion.div>
+                  </div> */}
+              {/* )} */}
+              {/* </motion.div> */}
               {/* Seller store details - Lazada style */}
               <div className="mb-4">
                 <motion.div
@@ -1541,8 +1551,7 @@ const Item: FC = () => {
                   <div className="px-4 pt-4 pb-3">
                     <div className="flex items-center justify-between">
                       <div>
-                        <div className="text-xs text-gray-500">Sold by</div>
-                        <div className="text-black font-semibold leading-tight">
+                        <div className="text-[#a4a4a4]font-semibold leading-tight">
                           {product.store.store_name}
                         </div>
                       </div>
@@ -1565,7 +1574,7 @@ const Item: FC = () => {
                   </div>
 
                   {/* Metrics */}
-                  <div className="grid grid-cols-3 divide-x divide-gray-200 border-y border-gray-200">
+                  <div className="grid grid-cols-2 divide-x divide-gray-200 border-y border-gray-200">
                     <div className="p-4 text-center">
                       <div className="text-xs text-gray-500 mb-1">Seller Ratings</div>
                       <div className="text-lg font-semibold text-black">
@@ -1576,10 +1585,7 @@ const Item: FC = () => {
                       <div className="text-xs text-gray-500 mb-1">Ship on Time</div>
                       <div className="text-lg font-semibold text-black">100%</div>
                     </div>
-                    <div className="p-4 text-center">
-                      <div className="text-xs text-gray-500 mb-1">Chat Response Rate</div>
-                      <div className="text-xs text-gray-400">not enough data</div>
-                    </div>
+                   
                   </div>
 
                   {/* Footer link */}
