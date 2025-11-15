@@ -32,7 +32,8 @@ const Wishlist: FC<WishlistProps> = ({ defaultTab = 'wishlist' }) => {
 
   const fetchWishlist = async () => {
     try {
-      const response = await fetch(`${baseUrl}/get_wishlist.php?user_email=${userEmail}`);
+      const response = await fetch(`http://127.0.0.1:8000/api/getWishlist?user_email=${userEmail}`);
+
       const result = await response.json();
 
       if (result.success) {
@@ -47,7 +48,10 @@ const Wishlist: FC<WishlistProps> = ({ defaultTab = 'wishlist' }) => {
 
   const fetchRecentlyViewed = async () => {
     try {
-      const response = await fetch(`${baseUrl}/get_wishlist.php?user_email=${userEmail}&recent=1`);
+      const response = await fetch(
+        `http://127.0.0.1:8000/api/getWishlist?user_email=${userEmail}&recent=1`
+      );
+
       const result = await response.json();
 
       if (result.success) {
@@ -89,8 +93,8 @@ const Wishlist: FC<WishlistProps> = ({ defaultTab = 'wishlist' }) => {
 
   const removeFromWishlist = async (id: string) => {
     try {
-      const response = await fetch(`${baseUrl}/remove_wishlist.php`, {
-        method: 'POST',
+      const response = await fetch(`http://127.0.0.1:8000/api/removeFromWishlist`, {
+        method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -145,12 +149,18 @@ const Wishlist: FC<WishlistProps> = ({ defaultTab = 'wishlist' }) => {
       className="group cursor-pointer flex flex-col md:flex-row bg-white border rounded-lg overflow-hidden mb-4 shadow-sm hover:shadow-md transition-shadow duration-200 focus:outline-none focus:ring-2 focus:ring-yellow-500"
     >
       <div className="w-full md:w-48 h-48 md:h-auto bg-gray-100 flex-shrink-0">
-        <img src={`${baseUrl}/${product.image}`} alt={product.name} className="w-full h-full object-cover group-hover:opacity-95 transition" />
+        <img
+          src={`${baseUrl}/${product.image}`}
+          alt={product.name}
+          className="w-full h-full object-cover group-hover:opacity-95 transition"
+        />
       </div>
       <div className="flex-grow p-4 flex flex-col justify-between">
         <div>
           <div className="flex justify-between items-start">
-            <h3 className="text-lg font-medium text-black group-hover:text-yellow-600 transition-colors">{product.name}</h3>
+            <h3 className="text-lg font-medium text-black group-hover:text-yellow-600 transition-colors">
+              {product.name}
+            </h3>
             <button
               onClick={(e) => {
                 e.stopPropagation();

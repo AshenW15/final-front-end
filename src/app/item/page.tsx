@@ -532,7 +532,6 @@ const Item: FC = () => {
       formData.append('product_id', productId || '0');
 
       try {
-     
         axios
           .get(`http://127.0.0.1:8000/api/product/${productId}`, {
             headers: { Accept: 'application/json' },
@@ -690,7 +689,6 @@ const Item: FC = () => {
     product_image: undefined,
   };
 
-
   const calculateDiscountPrice = (originalPrice: string, discount: number): string => {
     const p = parsePriceToNumber(originalPrice);
     if (p == null || p <= 0 || discount <= 0) return formatPriceLKR(p || 0);
@@ -821,17 +819,22 @@ const Item: FC = () => {
 
     const addToWishlist = async () => {
       try {
-        const formData = new FormData();
-        formData.append('user_email', user?.email || ' ');
-        formData.append('product_id', productId);
-        console.log(formData.get('user_email'), formData.get('product_id'));
+        const payload = {
+          user_email: user?.email || '',
+          product_id: productId,
+        };
 
-        const response = await fetch(`${baseUrl}/add_wishlist.php`, {
+        const response = await fetch('http://127.0.0.1:8000/api/addToWishlist', {
           method: 'POST',
-          body: formData,
+          headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(payload),
         });
 
         const result = await response.json();
+
         if (result.success) {
           if (result.message === 'Product already in wishlist') {
             toast('Product already in wishlist', {
@@ -1043,7 +1046,9 @@ const Item: FC = () => {
             <ChevronRight className="w-3 h-3" />
             {data.storeDetails.category_name && (
               <>
-                <span className="hover:text-yellow-500 cursor-pointer">{data.storeDetails.category_name}</span>
+                <span className="hover:text-yellow-500 cursor-pointer">
+                  {data.storeDetails.category_name}
+                </span>
                 <ChevronRight className="w-3 h-3" />
               </>
             )}
@@ -1060,7 +1065,9 @@ const Item: FC = () => {
             >
               {data.product_name}
             </span>
-            <span className="hidden sm:inline text-yellow-500 font-medium">{data.product_name}</span>
+            <span className="hidden sm:inline text-yellow-500 font-medium">
+              {data.product_name}
+            </span>
           </motion.div>
 
           <div className="flex flex-col lg:flex-row gap-4 lg:gap-6 bg-white rounded-xl shadow-sm overflow-hidden">
@@ -1769,24 +1776,24 @@ const Item: FC = () => {
                   <h3 className="text-sm font-medium text-black">{item.product_name}</h3>
                   <h3 className="text-sm font-light text-gray-600">{item.product_description}</h3>
                   <div className="flex items-center gap-2">
-                  <h3 className="text-sm font-light text-gray-400 line-clamp-2 leading-tight line-through">
-                    Rs.{Number(item.product_price).toFixed(2)}
-                  </h3>
-                  {/* Discount Percentage next to price */}
-                  {item.product_discount !== 0 &&
-                    (() => {
-                      return (
-                        <span className="bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded">
-                          -{item.product_discount}%
-                        </span>
-                      );
-                    })()}
-                </div>
+                    <h3 className="text-sm font-light text-gray-400 line-clamp-2 leading-tight line-through">
+                      Rs.{Number(item.product_price).toFixed(2)}
+                    </h3>
+                    {/* Discount Percentage next to price */}
+                    {item.product_discount !== 0 &&
+                      (() => {
+                        return (
+                          <span className="bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded">
+                            -{item.product_discount}%
+                          </span>
+                        );
+                      })()}
+                  </div>
                   <div className="flex items-center gap-2">
-                  <span className="text-lg font-bold text-orange-500">
-                    {calculateDiscountPrice(item.product_price, item.product_discount)}
-                  </span>
-                </div>
+                    <span className="text-lg font-bold text-orange-500">
+                      {calculateDiscountPrice(item.product_price, item.product_discount)}
+                    </span>
+                  </div>
                   <div className="flex items-center">
                     <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
                     <span className="text-xs text-black ml-1">{item.product_rating}</span>
